@@ -618,7 +618,7 @@ def send_error(bridge_id, org_id, error_message, error_type, bridge_name=None, i
 
 def restructure_json_schema(response_type, service):
     match service:
-        case 'openai':
+        case 'openai' | 'gemini':
             schema = response_type.get('json_schema', {})
             del response_type['json_schema']
             for key, value in schema.items():
