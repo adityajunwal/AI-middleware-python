@@ -5,6 +5,7 @@ from ..createConversations import ConversationService
 from src.configs.constant import service_name
 from src.services.utils.ai_middleware_format import Response_formatter
 from google.genai import types
+from src.services.utils.audio_utils import get_audio_mime_type
 
 class GeminiHandler(BaseService):
     async def execute(self):
@@ -45,7 +46,7 @@ class GeminiHandler(BaseService):
 
             contents = conversations
 
-            if not self.image_data:
+            if not self.image_data and not self.audio_data:
                 contents.append(types.Content(role="user", parts=[types.Part(text=self.user)]))
             else:
                 user_parts = []
@@ -55,6 +56,10 @@ class GeminiHandler(BaseService):
                 if self.image_data and isinstance(self.image_data, list):
                     for image_url in self.image_data:
                         user_parts.append(types.Part.from_uri(file_uri=image_url, mime_type="image/png" if image_url.endswith(".png") else "image/jpeg"))
+
+                if self.audio_data and isinstance(self.audio_data, list):
+                    for audio_url in self.audio_data:
+                        user_parts.append(types.Part.from_uri(file_uri=audio_url, mime_type=get_audio_mime_type(audio_url)))
         
                 if user_parts:
                     contents.append(types.Content(role='user', parts=user_parts))
