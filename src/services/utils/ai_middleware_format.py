@@ -132,7 +132,7 @@ async def Response_formatter(response=None, service=None, tools=None, type="chat
                                 and item.get("content", [{}])[0].get("text", None) is not None
                             ),
                             None,
-                        )
+                        ) 
                     )
                 ),
                 "model": response.get("model", None),
