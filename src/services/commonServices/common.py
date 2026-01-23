@@ -15,6 +15,7 @@ from src.services.utils.common_utils import (
     add_default_template,
     add_files_to_parse_data,
     add_user_in_varaibles,
+    apply_prompt_wrapper,
     build_service_params,
     build_service_params_for_batch,
     configure_custom_settings,
@@ -92,7 +93,9 @@ async def chat_multiple_agents(request_body):
 
         # Create a new body for the primary agent
         primary_body = body.copy()
+        wrapper_id = primary_body.get("wrapper_id")
         primary_body.update(primary_config)
+        primary_body["wrapper_id"] = wrapper_id
         primary_body["bridge_id"] = primary_bridge_id
         # Store the original primary_bridge_id for Redis key consistency
         primary_body["primary_bridge_id"] = primary_bridge_id
@@ -131,6 +134,7 @@ async def chat(request_body):
 
         # Setup pre_tools for the current agent with its own variables
         setup_agent_pre_tools(parsed_data, bridge_configurations)
+        await apply_prompt_wrapper(parsed_data)
 
         # Initialize or retrieve transfer_request_id for tracking transfers
         transfer_request_id = parsed_data.get("transfer_request_id") or str(uuid.uuid1())

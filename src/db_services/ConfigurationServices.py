@@ -15,6 +15,7 @@ apikeyCredentialsModel = db["apikeycredentials"]
 version_model = db["configuration_versions"]
 threadsModel = db["threads"]
 foldersModel = db["folders"]
+prompt_wrappersModel = db["prompt_wrappers"]
 
 
 async def get_bridges_with_redis(bridge_id=None, org_id=None, version_id=None):
@@ -474,6 +475,7 @@ async def get_bridges_with_tools_and_apikeys(bridge_id, org_id, version_id=None)
                     "$project": {
                         "folder_apikeys": 1,
                         "type": 1,
+                        "wrapper_id": 1,
                         "folder_limit": {"$ifNull": ["$folder_limit", 0]},
                         "folder_usage": {"$ifNull": ["$folder_usage", 0]},
                         "apikey_object_id": 1,
@@ -505,6 +507,12 @@ async def get_bridges_with_tools_and_apikeys(bridge_id, org_id, version_id=None)
                 bridge_data["folder_usage"] = folder_result[0]["folder_usage"]
             else:
                 bridge_data["folder_usage"] = 0
+
+            if folder_result and folder_result[0].get("wrapper_id"):
+                wrapper_id_value = folder_result[0]["wrapper_id"]
+                bridge_data["wrapper_id"] = str(wrapper_id_value) if not isinstance(wrapper_id_value, str) else wrapper_id_value
+            else:
+                bridge_data["wrapper_id"] = None
 
         else:
             # No folder_id, set empty folder_apikeys and folder_type
@@ -633,3 +641,30 @@ async def get_agents_data(slug_name, user_email):
         }
     )
     return bridges
+
+
+async def get_prompt_wrapper_by_id(wrapper_id: str, org_id: str | None = None):
+    """
+    Return prompt wrapper document for the provided wrapper_id and optional org_id filter.
+    """
+    if not wrapper_id:
+        return None
+
+    try:
+        query = {"_id": ObjectId(wrapper_id)}
+    except (errors.InvalidId, TypeError, ValueError):
+        logger.warning("Invalid wrapper_id provided: %s", wrapper_id)
+        return None
+
+    if org_id:
+        query["org_id"] = org_id
+
+    try:
+        wrapper = await prompt_wrappersModel.find_one(query)
+        if not wrapper:
+            return None
+        wrapper["_id"] = str(wrapper["_id"])
+        return wrapper
+    except Exception as error:
+        logger.error("Failed to fetch prompt wrapper %s: %s", wrapper_id, str(error))
+        return None
