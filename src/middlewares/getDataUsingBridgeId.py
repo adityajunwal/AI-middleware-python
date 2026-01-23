@@ -61,7 +61,11 @@ async def add_configuration_data_to_body(request: Request):
             primary_config["images"] = []
         if not isinstance(primary_config.get("files"), list) and not isinstance(body.get("files"), list):
             primary_config["files"] = []
+        body_wrapper_id = body.get("wrapper_id")
         body.update(primary_config)
+        if body_wrapper_id is not None:
+            body["wrapper_id"] = body_wrapper_id
+            
         body["bridge_configurations"] = bridge_configurations
         service = body.get("service")
         model = body.get("configuration").get("model")

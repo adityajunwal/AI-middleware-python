@@ -140,6 +140,7 @@ def parse_request_body(request_body):
         "user": body.get("user"),
         "tools": body.get("configuration", {}).get("tools"),
         "service": body.get("service"),
+        "wrapper_id": body.get("wrapper_id"),
         "variables": body.get("variables") or {},
         "bridgeType": body.get("chatbot"),
         "template": body.get("template"),
@@ -206,6 +207,30 @@ def parse_request_body(request_body):
         "chatbot_auto_answers": body.get("chatbot_auto_answers"),
         "owner_id": state.get("profile", {}).get("owner_id"),
     }
+
+
+async def apply_prompt_wrapper(parsed_data):
+    """
+    Apply prompt wrapper overrides when a valid wrapper_id is present.
+    """
+    wrapper_id = parsed_data.get("wrapper_id") or parsed_data.get("body", {}).get("wrapper_id")
+    if not wrapper_id:
+        return
+
+    wrapper_doc = await ConfigurationService.get_prompt_wrapper_by_id(str(wrapper_id), parsed_data.get("org_id"))
+    if not wrapper_doc:
+        return
+
+    wrapper_template = wrapper_doc.get("template")
+    config_prompt = parsed_data["configuration"].get("prompt", "")
+
+    template_context = {"prompt": config_prompt, **parsed_data.get("variables", {})}
+
+
+    final_prompt = None
+    if wrapper_template:
+        final_prompt, _ = Helper.replace_variables_in_prompt(wrapper_template, template_context)
+        parsed_data["configuration"]["prompt"] = final_prompt
 
 
 def add_default_template(prompt):

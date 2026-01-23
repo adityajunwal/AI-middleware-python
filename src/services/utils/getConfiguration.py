@@ -204,6 +204,7 @@ async def _prepare_configuration_response(
         "is_embed": result.get("bridges", {}).get("folder_type") == "embed",
         "user_id": result.get("bridges", {}).get("user_id"),
         "folder_id": result.get("bridges", {}).get("folder_id"),
+        "wrapper_id": result.get("bridges", {}).get("wrapper_id"),
         "web_search_filters": web_search_filters_value,
         "chatbot_auto_answers": bridge_data.get("bridges", {}).get("chatbot_auto_answers"),
     }
