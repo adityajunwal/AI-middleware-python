@@ -34,6 +34,7 @@ from src.services.utils.common_utils import (
     process_background_tasks_for_playground,
     process_variable_state,
     restructure_json_schema,
+    save_agent_memory,
     send_error,
     setup_agent_pre_tools,
     update_cost_and_last_used_in_background,
@@ -418,6 +419,10 @@ async def chat(request_body):
                 success=True,
                 variables=parsed_data.get("variables", {}),
             )
+            
+            # Save to agent-level memory with Canonicalizer (non-blocking)
+            save_agent_memory(parsed_data, result)
+            
             # Update usage metrics for successful API calls
             update_usage_metrics(parsed_data, params, latency, result=result, success=True)
             result["response"]["usage"]["cost"] = parsed_data["usage"].get("expectedCost", 0)

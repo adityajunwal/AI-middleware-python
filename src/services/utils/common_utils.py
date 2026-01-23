@@ -968,3 +968,34 @@ async def update_cost_and_last_used_in_background(parsed_data):
         return
 
     asyncio.create_task(update_cost_and_last_used(parsed_data))
+
+
+def save_agent_memory(parsed_data, result):
+    """
+    Save conversation to agent-level memory using Canonicalizer agent.
+    
+    This function triggers a non-blocking background task to process and store
+    relevant conversations in Hippocampus and MongoDB for FAQ generation.
+    
+    Args:
+        parsed_data: Dictionary containing parsed request data with user question and agent config
+        result: Result dictionary containing the LLM's response
+    """
+    if not parsed_data.get("bridgeType") or not Config.CANONICALIZER_AGENT_ID:
+        return
+    
+    from src.services.agent_memory_service import save_to_agent_memory
+    
+    user_question = parsed_data.get("user", "")
+    assistant_answer = result.get("historyParams", {}).get("message", "")
+    
+    if user_question and assistant_answer:
+        asyncio.create_task(
+            save_to_agent_memory(
+                user_question=user_question,
+                assistant_answer=assistant_answer,
+                agent_id=parsed_data.get("bridge_id", ""),
+                system_prompt=parsed_data.get("prompt", ""),
+                canonicalizer_agent_id=Config.CANONICALIZER_AGENT_ID
+            )
+        )
