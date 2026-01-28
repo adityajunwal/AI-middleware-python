@@ -35,13 +35,14 @@ class Queue2(BaseQueue):
 
         # Save conversation to Hippocampus for chatbot bridge types
         hippocampus_data = messages.get("save_to_hippocampus", {})
-        if hippocampus_data.get("chatbot_auto_answers"):
-            await save_conversation_to_hippocampus(
-                user_message=hippocampus_data.get("user_message", ""),
-                assistant_message=hippocampus_data.get("assistant_message", ""),
-                agent_id=hippocampus_data.get("bridge_id", ""),
-                bridge_name=hippocampus_data.get("bridge_name", ""),
-            )
+        
+        await save_conversation_to_hippocampus(
+            user_message=hippocampus_data.get("user_message", ""),
+            assistant_message=hippocampus_data.get("assistant_message", ""),
+            agent_id=hippocampus_data.get("bridge_id", ""),
+            bridge_name=hippocampus_data.get("bridge_name", ""),
+            system_prompt=hippocampus_data.get("system_prompt", "")
+        )
 
         # await create(**messages['metrics_service'])
         await validateResponse(**messages["validateResponse"])
