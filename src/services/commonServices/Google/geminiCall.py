@@ -6,39 +6,47 @@ from src.configs.constant import service_name
 from src.services.utils.ai_middleware_format import Response_formatter
 from google.genai import types
 
+from ..baseService.baseService import BaseService
+from ..createConversations import ConversationService
+
+
 class GeminiHandler(BaseService):
     async def execute(self):
         historyParams = {}
         tools = {}
         functionCallRes = {}
-        if self.type == 'image':
-            self.customConfig['prompt'] = self.user
-            gemini_response = await self.image(self.customConfig, self.apikey, service_name['gemini'])
+        if self.type == "image":
+            self.customConfig["prompt"] = self.user
+            gemini_response = await self.image(self.customConfig, self.apikey, service_name["gemini"])
             model_response = gemini_response.get("modelResponse", {})
-            if not gemini_response.get('success'):
+            if not gemini_response.get("success"):
                 if not self.playground:
                     await self.handle_failure(gemini_response)
-                raise ValueError(gemini_response.get('error'))
-            response = await Response_formatter(model_response, service_name['gemini'], tools, self.type, self.image_data)
+                raise ValueError(gemini_response.get("error"))
+            response = await Response_formatter(
+                model_response, service_name["gemini"], tools, self.type, self.image_data
+            )
             if not self.playground:
                 historyParams = self.prepare_history_params(response, model_response, tools, None)
-                historyParams['message'] = "image generated successfully"
-                historyParams['type'] = 'assistant'
+                historyParams["message"] = "image generated successfully"
+                historyParams["type"] = "assistant"
         elif self.file_data or self.youtube_url:
-            self.customConfig['prompt'] = self.user
+            self.customConfig["prompt"] = self.user
             if self.youtube_url:
-                self.customConfig['youtube_url'] = self.youtube_url
-            gemini_response = await self.video(self.customConfig, self.apikey, service_name['gemini'])
+                self.customConfig["youtube_url"] = self.youtube_url
+            gemini_response = await self.video(self.customConfig, self.apikey, service_name["gemini"])
             model_response = gemini_response.get("modelResponse", {})
-            if not gemini_response.get('success'):
+            if not gemini_response.get("success"):
                 if not self.playground:
                     await self.handle_failure(gemini_response)
-                raise ValueError(gemini_response.get('error'))
-            self.type = 'video'
-            response = await Response_formatter(model_response, service_name['gemini'], tools, self.type, self.file_data)
+                raise ValueError(gemini_response.get("error"))
+            self.type = "video"
+            response = await Response_formatter(
+                model_response, service_name["gemini"], tools, self.type, self.file_data
+            )
             if not self.playground:
                 historyParams = self.prepare_history_params(response, model_response, tools, None)
-                historyParams['type'] = 'assistant'  
+                historyParams["type"] = "assistant"
         else:
             conversations = ConversationService.createGeminiConversation(self.configuration.get('conversation'), self.memory).get('messages', [])
             system_instruction = self.configuration['prompt']
