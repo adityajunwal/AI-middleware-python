@@ -7,7 +7,7 @@ import httpx
 from fastapi import Request
 
 from globals import logger, traceback
-from src.configs.constant import inbuild_tools, redis_keys, service_name
+from src.configs.constant import inbuild_tools, redis_keys, service_name, AUDIO_MIME_TYPES
 from src.controllers.rag_controller import get_text_from_vectorsQuery
 from src.db_services.ConfigurationServices import get_bridges_without_tools, update_bridge
 from src.services.cache_service import REDIS_PREFIX, client, find_in_cache, store_in_cache
@@ -629,3 +629,10 @@ async def save_files_to_redis(thread_id, sub_thread_id, bridge_id, files):
             await store_in_cache(cache_key, files, 604800)
     else:
         await store_in_cache(cache_key, files, 604800)
+
+def get_audio_mime_type(url: str) -> str:
+    for ext, mime in AUDIO_MIME_TYPES.items():
+        if url.lower().endswith(ext):
+            return mime
+        
+    return "audio/mpeg" # Default fallback
