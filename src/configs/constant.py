@@ -81,3 +81,13 @@ agent_config_update_keys = {
     "_response_type": "_response_type",
     "_user_message": "_user_message"
 }
+
+AUDIO_MIME_TYPES = {
+        ".mp3": "audio/mpeg",
+        ".wav": "audio/wav",
+        ".ogg": "audio/ogg",
+        ".flac": "audio/flac",
+        ".aac": "audio/aac",
+        ".m4a": "audio/mp4",
+        ".webm": "audio/webm",
+    }
