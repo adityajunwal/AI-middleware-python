@@ -429,7 +429,7 @@ async def process_data_and_run_tools(codes_mapping, self):
                     )
                 elif self.tool_id_and_name_mapping[name].get("type") == "AGENT":
                     agent_args = {
-                        "org_id": self.org_id,
+                        # "org_id": self.org_id,
                         "bridge_id": self.tool_id_and_name_mapping[name].get("bridge_id"),
                         "user": tool_data.get("args").get("_query"),
                         "variables": {key: value for key, value in tool_data.get("args").items() if key != "user"},
